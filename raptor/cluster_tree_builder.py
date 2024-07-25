@@ -47,6 +47,21 @@ class ClusterTreeConfig(TreeBuilderConfig):
         return base_summary + cluster_tree_summary
 
 class ClusterTreeBuilder(TreeBuilder):
+    """
+    ClusterTreeBuilder is responsible for constructing a hierarchical tree structure
+    using clustering algorithms. It extends the TreeBuilder class and utilizes a 
+    specified clustering algorithm to group nodes at each layer of the tree.
+
+    Attributes:
+        reduction_dimension (int): The dimension to which data should be reduced.
+        clustering_algorithm (ClusteringAlgorithm): The algorithm to use for clustering.
+        clustering_params (dict): Additional parameters for the clustering algorithm.
+
+    Methods:
+        construct_tree(current_level_nodes, all_tree_nodes, layer_to_nodes, use_multithreading):
+            Constructs the hierarchical tree by clustering nodes at each layer.
+    """
+
     def __init__(self, config) -> None:
         super().__init__(config)
 
@@ -67,6 +82,18 @@ class ClusterTreeBuilder(TreeBuilder):
         layer_to_nodes: Dict[int, List[Node]],
         use_multithreading: bool = False,
     ) -> Dict[int, Node]:
+        """
+        Constructs a hierarchical tree by clustering nodes at each layer. Starts at 'bottom layer' (original chunks) and goes up self.num_layers.
+
+        Args:
+            current_level_nodes (Dict[int, Node]): Nodes at the current level of the tree.
+            all_tree_nodes (Dict[int, Node]): All nodes in the tree.
+            layer_to_nodes (Dict[int, List[Node]]): Mapping of layers to their respective nodes.
+            use_multithreading (bool, optional): Whether to use multithreading for processing clusters. Defaults to False.
+
+        Returns:
+            Dict[int, Node]: Updated nodes at the current level after constructing the tree.
+        """
         logging.info("Using Cluster TreeBuilder")
 
         next_node_index = len(all_tree_nodes)
@@ -74,6 +101,19 @@ class ClusterTreeBuilder(TreeBuilder):
         def process_cluster(
             cluster, new_level_nodes, next_node_index, summarization_length, lock
         ):
+            """
+            Processes a single cluster of nodes by summarizing their texts and creating a new parent node.
+
+            Args:
+                cluster (List[Node]): The cluster of nodes to process.
+                new_level_nodes (Dict[int, Node]): The dictionary to store new level nodes.
+                next_node_index (int): The index for the next node to be created.
+                summarization_length (int): The maximum length for the summarized text.
+                lock (Lock): A threading lock to ensure thread-safe operations.
+
+            Returns:
+                None
+            """
             node_texts = get_text(cluster)
 
             summarized_text = self.summarize(
@@ -92,6 +132,25 @@ class ClusterTreeBuilder(TreeBuilder):
             with lock:
                 new_level_nodes[next_node_index] = new_parent_node
 
+        def should_stop_layer_construction(node_list_current_layer: List[Node], layer: int) -> bool:
+            """
+            Determines if layer construction should stop based on the number of nodes in the current layer.
+
+            Args:
+                node_list_current_layer (List[Node]): List of nodes in the current layer.
+                layer (int): The current layer index.
+
+            Returns:
+                bool: True if layer construction should stop, False otherwise.
+            """
+            if len(node_list_current_layer) <= self.reduction_dimension + 1:
+                self.num_layers = layer
+                logging.info(
+                    f"Stopping Layer construction: Cannot Create More Layers. Total Layers in tree: {layer}"
+                )
+                return True
+            return False
+
         for layer in range(self.num_layers):
 
             new_level_nodes = {}
@@ -100,11 +159,8 @@ class ClusterTreeBuilder(TreeBuilder):
 
             node_list_current_layer = get_node_list(current_level_nodes)
 
-            if len(node_list_current_layer) <= self.reduction_dimension + 1:
-                self.num_layers = layer
-                logging.info(
-                    f"Stopping Layer construction: Cannot Create More Layers. Total Layers in tree: {layer}"
-                )
+            # Check if we should stop layer construction
+            if should_stop_layer_construction(node_list_current_layer, layer):
                 break
 
             clusters = self.clustering_algorithm.perform_clustering(

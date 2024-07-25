@@ -133,12 +133,13 @@ class RAPTOR_Clustering(ClusteringAlgorithm):
     def perform_clustering(
         nodes: List[Node],
         embedding_model_name: str,
-        max_length_in_cluster: int = 3500,
+        max_token_length_in_cluster: int = 3500,
         tokenizer=tiktoken.get_encoding("cl100k_base"),
         reduction_dimension: int = 10,
         threshold: float = 0.1,
         verbose: bool = False,
     ) -> List[List[Node]]:
+
         # Get the embeddings from the nodes
         embeddings = np.array([node.embeddings[embedding_model_name] for node in nodes])
 
@@ -169,14 +170,14 @@ class RAPTOR_Clustering(ClusteringAlgorithm):
             )
 
             # If the total length exceeds the maximum allowed length, recluster this cluster
-            if total_length > max_length_in_cluster:
+            if total_length > max_token_length_in_cluster:
                 if verbose:
                     logging.info(
                         f"reclustering cluster with {len(cluster_nodes)} nodes"
                     )
                 node_clusters.extend(
                     RAPTOR_Clustering.perform_clustering(
-                        cluster_nodes, embedding_model_name, max_length_in_cluster
+                        cluster_nodes, embedding_model_name, max_token_length_in_cluster
                     )
                 )
             else:
