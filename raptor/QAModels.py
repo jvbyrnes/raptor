@@ -19,12 +19,12 @@ class BaseQAModel(ABC):
 
 
 class GPT3QAModel(BaseQAModel):
-    def __init__(self, model="text-davinci-003"):
+    def __init__(self, model="gpt-4o-mini"):
         """
-        Initializes the GPT-3 model with the specified model version.
+        Initializes the GPT-4o-mini model with the specified model version.
 
         Args:
-            model (str, optional): The GPT-3 model version to use for generating summaries. Defaults to "text-davinci-003".
+            model (str, optional): The GPT-4o-mini model version to use for generating summaries. Defaults to "text-davinci-003".
         """
         self.model = model
         self.client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
@@ -32,7 +32,7 @@ class GPT3QAModel(BaseQAModel):
     @retry(wait=wait_random_exponential(min=1, max=20), stop=stop_after_attempt(6))
     def answer_question(self, context, question, max_tokens=150, stop_sequence=None):
         """
-        Generates a summary of the given context using the GPT-3 model.
+        Generates a summary of the given context using the GPT-4o-mini model.
 
         Args:
             context (str): The text to summarize.
@@ -60,13 +60,13 @@ class GPT3QAModel(BaseQAModel):
             return ""
 
 
-class GPT3TurboQAModel(BaseQAModel):
-    def __init__(self, model="gpt-3.5-turbo"):
+class GPT4oQAModel(BaseQAModel):
+    def __init__(self, model="gpt-4o"):
         """
-        Initializes the GPT-3 model with the specified model version.
+        Initializes the GPT-4o model with the specified model version.
 
         Args:
-            model (str, optional): The GPT-3 model version to use for generating summaries. Defaults to "text-davinci-003".
+            model (str, optional): The GPT-4o model version to use for generating summaries
         """
         self.model = model
         self.client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
@@ -76,7 +76,7 @@ class GPT3TurboQAModel(BaseQAModel):
         self, context, question, max_tokens=150, stop_sequence=None
     ):
         """
-        Generates a summary of the given context using the GPT-3 model.
+        Generates a summary of the given context using the GPT-4o model.
 
         Args:
             context (str): The text to summarize.

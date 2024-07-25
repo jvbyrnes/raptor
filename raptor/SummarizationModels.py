@@ -14,8 +14,8 @@ class BaseSummarizationModel(ABC):
         pass
 
 
-class GPT3TurboSummarizationModel(BaseSummarizationModel):
-    def __init__(self, model="gpt-3.5-turbo"):
+class GPT4oMiniSummarizationModel(BaseSummarizationModel):
+    def __init__(self, model="gpt-4o-mini"):
 
         self.model = model
 
