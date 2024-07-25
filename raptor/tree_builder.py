@@ -172,6 +172,8 @@ class TreeBuilder:
         if children_indices is None:
             children_indices = set()
 
+        logging.info(f"Creating embedding for text: {text}")
+
         embeddings = {
             model_name: model.create_embedding(text)
             for model_name, model in self.embedding_models.items()
