@@ -80,7 +80,7 @@ class ClusterTreeBuilder(TreeBuilder):
         current_level_nodes: Dict[int, Node],
         all_tree_nodes: Dict[int, Node],
         layer_to_nodes: Dict[int, List[Node]],
-        use_multithreading: bool = False,
+        use_multithreading: bool = True,
     ) -> Dict[int, Node]:
         """
         Constructs a hierarchical tree by clustering nodes at each layer. Starts at 'bottom layer' (original chunks) and goes up self.num_layers.
