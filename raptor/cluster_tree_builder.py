@@ -15,6 +15,15 @@ logging.basicConfig(format="%(asctime)s - %(message)s", level=logging.INFO)
 
 
 class ClusterTreeConfig(TreeBuilderConfig):
+    """
+    Configuration class for ClusterTreeBuilder.
+
+    Attributes:
+        reduction_dimension (int): The dimension to which data should be reduced.
+        clustering_algorithm (ClusteringAlgorithm): The algorithm to use for clustering.
+        clustering_params (dict): Additional parameters for the clustering algorithm.
+    """
+
     def __init__(
         self,
         reduction_dimension=10,
@@ -36,7 +45,6 @@ class ClusterTreeConfig(TreeBuilderConfig):
         Clustering Parameters: {self.clustering_params}
         """
         return base_summary + cluster_tree_summary
-
 
 class ClusterTreeBuilder(TreeBuilder):
     def __init__(self, config) -> None:
