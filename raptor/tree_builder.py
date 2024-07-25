@@ -176,8 +176,6 @@ class TreeBuilder:
         if children_indices is None:
             children_indices = set()
 
-        logging.info(f"Creating embedding for text: {text}")
-
         embeddings = {
             model_name: model.create_embedding(text)
             for model_name, model in self.embedding_models.items()
@@ -253,7 +251,7 @@ class TreeBuilder:
         with ThreadPoolExecutor() as executor:
             future_nodes = {
                 executor.submit(self.create_node, index, text): (index, text)
-                for index, text in enumerate(chunks)
+                for index, text in enumerate(chunks) if text and text.strip()
             }
 
             leaf_nodes = {}
@@ -283,11 +281,10 @@ class TreeBuilder:
         else:
             leaf_nodes = {}
             for index, text in enumerate(chunks):
-                if text and text.strip():
-                    result = self.create_node(index, text)
-                    if result:
-                        __, node = result
-                        leaf_nodes[index] = node
+                result = self.create_node(index, text)
+                if result:
+                    __, node = result
+                    leaf_nodes[index] = node
         layer_to_nodes = {0: list(leaf_nodes.values())}
 
         logging.info(f"Created {len(leaf_nodes)} Leaf Embeddings")
