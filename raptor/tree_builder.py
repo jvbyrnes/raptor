@@ -169,6 +169,10 @@ class TreeBuilder:
         Returns:
             Tuple[int, Node]: A tuple containing the index and the newly created node.
         """
+        if not text or not text.strip():
+            logging.warning(f"Skipping empty or whitespace-only text at index {index}")
+            return None
+
         if children_indices is None:
             children_indices = set()
 
@@ -279,9 +283,11 @@ class TreeBuilder:
         else:
             leaf_nodes = {}
             for index, text in enumerate(chunks):
-                __, node = self.create_node(index, text)
-                leaf_nodes[index] = node
-
+                if text and text.strip():
+                    result = self.create_node(index, text)
+                    if result:
+                        __, node = result
+                        leaf_nodes[index] = node
         layer_to_nodes = {0: list(leaf_nodes.values())}
 
         logging.info(f"Created {len(leaf_nodes)} Leaf Embeddings")
